@@ -2,26 +2,26 @@ package main
 
 import (
 	"fmt"
-	internal_cfg "github.com/lugumedeiros/Blog-Aggregator-BootDev/internal/config"
+	"os"
+
+	cli_commands "github.com/lugumedeiros/Blog-Aggregator-BootDev/internal/cli"
 )
 
-const name_default = "default"
+// const name_default = "default"
 
 // 1. Read config file
 // 2. Set user to a "name"
 // 3. Read config again and print contents to cli
 func main() {
-	// fmt.Printf(config.GetConfigFilePath())
-	config_s, err_config := internal_cfg.Read()
-	if err_config != nil {
-		panic(err_config)
+	if len(os.Args) < 2 {
+		fmt.Printf("No command provided\n")
+		return
 	}
-	fmt.Printf("Stored username: %v\n", config_s.Current_user_name)
-	internal_cfg.SetUser(name_default)
-	config_s, err_config = internal_cfg.Read()
-	if err_config != nil {
-		panic(err_config)
+	cmd := os.Args[1]
+	args := os.Args[2:]
+	err := cli_commands.Execute(cmd, args)
+	if err != nil {
+		fmt.Printf("%v", err)
+		os.Exit(1)
 	}
-	fmt.Printf("New username: %v\n", config_s.Current_user_name)
-	fmt.Printf("db_url: '%v', user: '%v'\n", config_s.Db_url, config_s.Current_user_name)
 }
