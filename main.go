@@ -15,7 +15,7 @@ import (
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Printf("No command provided\n")
-		return
+		os.Exit(1)
 	}
 	cmd := os.Args[1]
 	args := os.Args[2:]
