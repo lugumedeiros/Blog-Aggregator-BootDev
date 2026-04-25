@@ -6,7 +6,8 @@ import (
 	"os"
 	"strings"
 
-	internal_cfg "github.com/lugumedeiros/Blog-Aggregator-BootDev/internal/config"
+	cfg "github.com/lugumedeiros/Blog-Aggregator-BootDev/internal/config"
+	db "github.com/lugumedeiros/Blog-Aggregator-BootDev/internal/database"
 )
 
 type commands struct {
@@ -34,6 +35,16 @@ func init() {
 			description: "help - Used to show every available command",
 			callback:    help,
 		},
+		"register": {
+			name:        "register",
+			description: "register {username} - Used to register a new login username",
+			callback:    register,
+		},
+		"unregister": {
+			name:        "unregister",
+			description: "unregister {username} - Used to remove a login username from database",
+			callback:    unregister,
+		},
 	}
 }
 
@@ -41,9 +52,18 @@ func login(args []string) error {
 	if len(args) != 1 {
 		return getErrorArgsQntd(1, len(args))
 	}
-	user := args[0]
-	internal_cfg.SetUser(user)
-	fmt.Printf("User set to '%v'\n", user)
+	username := args[0]
+
+	// Check DB
+	errdb := db.GetUserByName(username)
+	if errdb != nil {
+		if strings.Contains(errdb.Error(), "no rows in result") {
+			return fmt.Errorf("User '%v' not registered.", username)
+		}
+		return errdb
+	}
+	cfg.SetUser(username)
+	fmt.Printf("User set to '%v'\n", username)
 	return nil
 }
 
@@ -61,6 +81,48 @@ func help(args []string) error {
 		fmt.Printf("Command: %v\nDescription: %v\n\n", command_s.name, command_s.description)
 	}
 	return nil
+}
+
+func register(args []string) error {
+	if len(args) != 1 {
+		return getErrorArgsQntd(1, len(args))
+	}
+	username := args[0]
+
+	err_login := db.GetUserByName(username)
+	if err_login == nil {
+		return errors.New("Unable to register new user")
+	}
+
+	query_err := db.CreateUser(username)
+	if query_err == nil {
+		fmt.Printf("User '%v' registered\n", username)
+		return login([]string{username})
+	}
+
+	if strings.Contains(query_err.Error(), "duplicate key value violates unique") {
+		return fmt.Errorf("User '%v' already registered.", username)
+	}
+	return query_err
+}
+
+func unregister(args []string) error {
+	if len(args) != 1 {
+		return getErrorArgsQntd(1, len(args))
+	}
+	username := args[0]
+
+	err_login := db.GetUserByName(username)
+	if err_login != nil {
+		return errors.New("Unable to unregister user")
+	}
+
+	query_err := db.RemoveUserByName(username)
+	if query_err == nil {
+		fmt.Printf("User '%v' unregistered\n", username)
+		return nil
+	}
+	return query_err
 }
 
 func Execute(command_arg string, args []string) error {

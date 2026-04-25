@@ -12,22 +12,30 @@ const CONFIG_FILE_NAME = ".gatorconfig.json"
 type Config struct {
 	Db_url            string `json:"db_url"`
 	Current_user_name string `json:"current_user_name"`
+	App               string `json:"app"`
 }
 
 func getConfigFilePath() (string, error) {
-	//Env override
-	path := os.Getenv("GATOR_CONFIG_PATH")
-	if path != "" {
-		return path, nil
-	}
+	// //Env override
+	// path := os.Getenv("GATOR_CONFIG_PATH")
+	// if path != "" {
+	// 	return path, nil
+	// }
 
-	//Fallback to working dir
-	wd, err := os.Getwd()
+	// //Fallback to working dir
+	// wd, err := os.Getwd()
+	// if err != nil {
+	// 	return "", err
+	// }
+	// return filepath.Join(wd, CONFIG_FILE_NAME), nil
+
+	//BootDEV test:
+	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
 
-	return filepath.Join(wd, CONFIG_FILE_NAME), nil
+	return filepath.Join(home, ".gatorconfig.json"), nil
 }
 
 func Read() (Config, error) {
