@@ -50,6 +50,16 @@ func init() {
 			description: "reset - Used to clear the entire database",
 			callback: reset,
 		},
+		"users" : {
+			name: "users",
+			description: "users - Get all users registered",
+			callback: users,
+		},
+		"current" : {
+			name: "current",
+			description: "current - Get logged user",
+			callback: current,
+		},
 	}
 }
 
@@ -142,6 +152,37 @@ func reset(args []string) error {
 	}
 
 	return query_err
+}
+
+func current(args []string) error{
+	gator, err := cfg.Read()
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Current user: '%v'\n", gator.Current_user_name)
+	return nil
+}
+
+func users(args []string) error {
+	gator, err := cfg.Read()
+	if err != nil {
+		return err
+	}
+	logged_user := gator.Current_user_name
+	
+	users, err_db := db.GetUsers()
+	if err_db != nil {
+		return err_db
+	}
+	
+	for _, user := range users{
+		if user.Name == logged_user {
+			fmt.Printf("* %v (current)\n", user.Name)
+		} else {
+			fmt.Printf("* %v\n", user.Name)
+		}
+	}
+	return nil
 }
 
 func Execute(command_arg string, args []string) error {

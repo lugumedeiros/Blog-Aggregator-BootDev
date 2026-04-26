@@ -51,3 +51,7 @@ func RemoveUserByName(username string) error {
 func ResetUsers() error {
 	return AppDB.Querie.Reset(AppDB.Ctx)
 }
+
+func GetUsers() ([]User, error) {
+	return AppDB.Querie.GetAllUsers(AppDB.Ctx)
+}
