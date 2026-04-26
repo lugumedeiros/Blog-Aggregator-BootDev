@@ -8,6 +8,7 @@ import (
 
 	cfg "github.com/lugumedeiros/Blog-Aggregator-BootDev/internal/config"
 	db "github.com/lugumedeiros/Blog-Aggregator-BootDev/internal/database"
+	rss "github.com/lugumedeiros/Blog-Aggregator-BootDev/internal/rss"
 )
 
 type commands struct {
@@ -59,6 +60,11 @@ func init() {
 			name: "current",
 			description: "current - Get logged user",
 			callback: current,
+		},
+		"agg" : {
+			name: "agg",
+			description: "agg {url} - IDK",
+			callback: agg,
 		},
 	}
 }
@@ -181,6 +187,24 @@ func users(args []string) error {
 		} else {
 			fmt.Printf("* %v\n", user.Name)
 		}
+	}
+	return nil
+}
+
+func agg(args []string) error {
+	// if len(args) <= 1 {
+	// 	return getErrorArgsQntd(0, len(args))
+	// }
+	// url := args[0]
+
+	url := "https://www.wagslane.dev/index.xml"
+	feed, err := rss.FetchFeed(url)	
+	if err != nil {
+		return err
+	}
+	fmt.Printf("TITLE: %v\nLINK: %v\nDESCRIPTION: %v\n", feed.Channel.Title, feed.Channel.Link, feed.Channel.Description)
+	for idx, feed_item := range feed.Channel.Item {
+		fmt.Printf("%v. %v\nlink: %v\nDescription: %v\nPubDate: %v\n\n", idx+1, feed_item.Title, feed_item.Link, feed_item.Description, feed_item.PubDate)
 	}
 	return nil
 }
