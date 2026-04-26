@@ -45,6 +45,9 @@ func GetUserByName(username string) error {
 }
 
 func RemoveUserByName(username string) error {
-	err := AppDB.Querie.RemoveUser(AppDB.Ctx, username)
-	return err
+	return AppDB.Querie.RemoveUser(AppDB.Ctx, username)
+}
+
+func ResetUsers() error {
+	return AppDB.Querie.Reset(AppDB.Ctx)
 }

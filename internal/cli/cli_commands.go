@@ -45,6 +45,11 @@ func init() {
 			description: "unregister {username} - Used to remove a login username from database",
 			callback:    unregister,
 		},
+		"reset" : {
+			name: "reset",
+			description: "reset - Used to clear the entire database",
+			callback: reset,
+		},
 	}
 }
 
@@ -122,6 +127,20 @@ func unregister(args []string) error {
 		fmt.Printf("User '%v' unregistered\n", username)
 		return nil
 	}
+	return query_err
+}
+
+func reset(args []string) error {
+	if len(args) != 0 {
+		return getErrorArgsQntd(0, len(args))
+	}
+
+	query_err := db.ResetUsers()
+	if query_err == nil {
+		fmt.Printf("Database cleared\n")
+		return nil
+	}
+
 	return query_err
 }
 
