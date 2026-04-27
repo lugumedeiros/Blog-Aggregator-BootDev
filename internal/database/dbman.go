@@ -39,9 +39,13 @@ func CreateUser(username string) error {
 	return err
 }
 
-func GetUserByName(username string) error {
-	_, err := AppDB.Querie.GetUser(AppDB.Ctx, username)
-	return err
+func GetUserByName(username string) (User, error) {
+	return AppDB.Querie.GetUser(AppDB.Ctx, username)
+	
+}
+
+func GetUserById(id int32) (User, error) {
+	return AppDB.Querie.GetUserById(AppDB.Ctx, id)
 }
 
 func RemoveUserByName(username string) error {
@@ -62,8 +66,12 @@ func AddFeed(username string, title string, url string) error {
 	if err != nil{
 		return err
 	}
-	param.Name = username
+	param.Name = title
 	param.Url = url
 	param.UserID = user_param.ID
 	return AppDB.Querie.CreateFeed(AppDB.Ctx, param)
+}
+
+func GetAllFeeds() ([]Feed, error){
+	return AppDB.Querie.GetFeeds(AppDB.Ctx)
 }

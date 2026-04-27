@@ -71,6 +71,11 @@ func init() {
 			description: "addfeed {title} {url} - Add a feed to current user",
 			callback: addfeed,
 		},
+		"feeds" : {
+			name: "feeds",
+			description: "feeds - Get all feeds from database",
+			callback: feeds,
+		},
 	}
 }
 
@@ -81,7 +86,7 @@ func login(args []string) error {
 	username := args[0]
 
 	// Check DB
-	errdb := db.GetUserByName(username)
+	_, errdb := db.GetUserByName(username)
 	if errdb != nil {
 		if strings.Contains(errdb.Error(), "no rows in result") {
 			return fmt.Errorf("User '%v' not registered.", username)
@@ -115,7 +120,7 @@ func register(args []string) error {
 	}
 	username := args[0]
 
-	err_login := db.GetUserByName(username)
+	_, err_login := db.GetUserByName(username)
 	if err_login == nil {
 		return errors.New("Unable to register new user")
 	}
@@ -138,7 +143,7 @@ func unregister(args []string) error {
 	}
 	username := args[0]
 
-	err_login := db.GetUserByName(username)
+	_, err_login := db.GetUserByName(username)
 	if err_login != nil {
 		return errors.New("Unable to unregister user")
 	}
@@ -215,6 +220,29 @@ func addfeed(args []string) error {
 	user := getCurrentUsername()
 	return db.AddFeed(user, title, url)
 }
+
+func feeds(args []string) error {
+	if len(args) != 0 {
+		return getErrorArgsQntd(20, len(args))
+	}
+	feeds_s, err := db.GetAllFeeds()
+	if err != nil {
+		return err
+	}
+
+	for idx, feed := range feeds_s {
+		user, err_us := db.GetUserById(feed.UserID)
+		if err_us != nil {
+			return err_us
+		}
+		title := feed.Name
+		url := feed.Url
+		fmt.Printf("%v. %v\nUSER: %v\nURL: %v\n\n", idx, title, user.Name, url)
+	}
+	return nil
+}
+
+// --------------------------------- //
 
 func Execute(command_arg string, args []string) error {
 	command_struct, ok := commands_cli[strings.ToLower(command_arg)]

@@ -5,3 +5,6 @@ VALUES(
     $2,
     $3
 );
+
+-- name: GetFeeds :many
+SELECT * FROM feeds;
