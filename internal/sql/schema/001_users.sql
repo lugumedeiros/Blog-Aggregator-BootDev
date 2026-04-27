@@ -1,9 +1,9 @@
 -- +goose Up
 CREATE TABLE users(
-    id INTEGER PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
-    name TEXT NOT NULL
+    name TEXT UNIQUE NOT NULL
 );
 
 -- +goose Down

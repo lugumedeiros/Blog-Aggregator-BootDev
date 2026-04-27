@@ -66,6 +66,11 @@ func init() {
 			description: "agg {url} - IDK",
 			callback: agg,
 		},
+		"addfeed" : {
+			name: "addfeed",
+			description: "addfeed {title} {url} - Add a feed to current user",
+			callback: addfeed,
+		},
 	}
 }
 
@@ -161,21 +166,13 @@ func reset(args []string) error {
 }
 
 func current(args []string) error{
-	gator, err := cfg.Read()
-	if err != nil {
-		return err
-	}
-	fmt.Printf("Current user: '%v'\n", gator.Current_user_name)
+	username := getCurrentUsername()
+	fmt.Printf("Current user: '%v'\n", username)
 	return nil
 }
 
 func users(args []string) error {
-	gator, err := cfg.Read()
-	if err != nil {
-		return err
-	}
-	logged_user := gator.Current_user_name
-	
+	logged_user := getCurrentUsername()
 	users, err_db := db.GetUsers()
 	if err_db != nil {
 		return err_db
@@ -209,6 +206,16 @@ func agg(args []string) error {
 	return nil
 }
 
+func addfeed(args []string) error {
+	if len(args) != 2 {
+		return getErrorArgsQntd(2, len(args))
+	}
+	title := args[0]
+	url := args[1]
+	user := getCurrentUsername()
+	return db.AddFeed(user, title, url)
+}
+
 func Execute(command_arg string, args []string) error {
 	command_struct, ok := commands_cli[strings.ToLower(command_arg)]
 	if !ok {
@@ -222,5 +229,13 @@ func Execute(command_arg string, args []string) error {
 // -------------------------------- //
 
 func getErrorArgsQntd(expected int, current int) error {
-	return fmt.Errorf("Expected '%v' argument but found '%v'.\n", expected, current)
+	return fmt.Errorf("Expected '%v' argument(s) but found '%v'.\n", expected, current)
+}
+
+func getCurrentUsername() string {
+	gator, err := cfg.Read()
+	if err != nil {
+		return ""
+	}
+	return gator.Current_user_name
 }

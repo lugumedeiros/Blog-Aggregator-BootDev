@@ -55,3 +55,15 @@ func ResetUsers() error {
 func GetUsers() ([]User, error) {
 	return AppDB.Querie.GetAllUsers(AppDB.Ctx)
 }
+
+func AddFeed(username string, title string, url string) error {
+	var param CreateFeedParams
+	user_param, err := AppDB.Querie.GetUser(AppDB.Ctx, username)
+	if err != nil{
+		return err
+	}
+	param.Name = username
+	param.Url = url
+	param.UserID = user_param.ID
+	return AppDB.Querie.CreateFeed(AppDB.Ctx, param)
+}
