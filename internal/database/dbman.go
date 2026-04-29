@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	// "fmt"
 
 	_ "github.com/lib/pq"
 	cfg "github.com/lugumedeiros/Blog-Aggregator-BootDev/internal/config"
@@ -74,4 +75,57 @@ func AddFeed(username string, title string, url string) error {
 
 func GetAllFeeds() ([]Feed, error){
 	return AppDB.Querie.GetFeeds(AppDB.Ctx)
+}
+
+func GetFeedByUrl(url string) (Feed, error) {
+	return AppDB.Querie.GetFeedByUrl(AppDB.Ctx, url)
+}
+
+func Follow(url string, username string) error {
+	feed, err := GetFeedByUrl(url)
+	if err != nil {
+		return err
+	}
+	
+	user, err_u := GetUserByName(username)
+	if err_u != nil {
+		return err_u
+	}
+
+	var relation CreateFeedFollowParams
+	relation.FeedID = feed.ID
+	relation.UserID = user.ID
+	return AppDB.Querie.CreateFeedFollow(AppDB.Ctx, relation)
+}
+
+type feedRelation struct {
+	Feed Feed
+	Users []User
+}
+
+func Following() ([]feedRelation, error){
+	var feedCollection []feedRelation
+	feeds, errf := GetAllFeeds()
+	if errf != nil {
+		return nil, errf
+	}
+	for _, feed := range feeds {
+		user_ids, err_id := AppDB.Querie.GetUsersByFeed(AppDB.Ctx, feed.ID)
+		if err_id != nil {
+			return nil, err_id
+		}
+		
+		var feedRel feedRelation
+		feedRel.Feed = feed
+		for _, user_id := range user_ids {
+			//can cache but lazy
+			user, err_idq := GetUserById(user_id)
+			if err_idq != nil {
+				return nil, err_idq
+			}
+			feedRel.Users = append(feedRel.Users, user)
+		}
+		feedCollection = append(feedCollection, feedRel)
+	}
+	return feedCollection, nil
 }

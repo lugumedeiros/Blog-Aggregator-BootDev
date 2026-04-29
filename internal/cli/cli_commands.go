@@ -76,6 +76,21 @@ func init() {
 			description: "feeds - Get all feeds from database",
 			callback: feeds,
 		},
+		"follow" : {
+			name: "follow",
+			description: "follow {url} - Makes current user follow a feed",
+			callback: follow,
+		},
+		"following" : {
+			name: "following",
+			description: "following - List all feeds followed by current user",
+			callback: following,
+		},
+		"followingAll": {
+			name: "followingAll",
+			description: "followingAll - List all feeds with it's followers",
+			callback: followingAll,
+		},
 	}
 }
 
@@ -218,12 +233,16 @@ func addfeed(args []string) error {
 	title := args[0]
 	url := args[1]
 	user := getCurrentUsername()
-	return db.AddFeed(user, title, url)
+	err := db.AddFeed(user, title, url)
+	if err != nil {
+		return err
+	}
+	return follow([]string{url})
 }
 
 func feeds(args []string) error {
 	if len(args) != 0 {
-		return getErrorArgsQntd(20, len(args))
+		return getErrorArgsQntd(0, len(args))
 	}
 	feeds_s, err := db.GetAllFeeds()
 	if err != nil {
@@ -241,6 +260,55 @@ func feeds(args []string) error {
 	}
 	return nil
 }
+
+func follow(args []string) error {
+	if len(args) != 1 {
+		return getErrorArgsQntd(1, len(args))
+	}
+	url := args[0]
+	username := getCurrentUsername()
+	return db.Follow(url, username)
+}
+
+func followingAll(args []string) error {
+	if len(args) != 0 {
+		return getErrorArgsQntd(0, len(args))
+	}
+	relations, err := db.Following()
+	if err != nil {
+		return err
+	}
+	for _, relation := range relations{
+		fmt.Printf("FEED: %v\nURL: %v\nFOLLOWERS:\n", relation.Feed.Name, relation.Feed.Url)
+		for _, user := range relation.Users{
+			fmt.Printf(" - %v\n", user.Name)
+		}
+		fmt.Print("\n")
+	}
+	return nil
+}
+
+func following(args []string) error {
+	if len(args) != 0 {
+		return getErrorArgsQntd(0, len(args))
+	}
+	relations, err := db.Following()
+	if err != nil {
+		return err
+	}
+	username := getCurrentUsername()
+
+	fmt.Printf("Feeds followed by %v:\n", username)
+	for _, relation := range relations{
+		for _, user := range relation.Users {
+			if user.Name == username {
+				fmt.Printf(" - %v\n", relation.Feed.Name)
+			}
+		}
+	}
+	return nil
+}
+
 
 // --------------------------------- //
 
