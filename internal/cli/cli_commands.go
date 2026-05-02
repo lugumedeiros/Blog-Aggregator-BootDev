@@ -91,6 +91,11 @@ func init() {
 			description: "followingAll - List all feeds with it's followers",
 			callback: followingAll,
 		},
+		"unfollow" : {
+			name: "unfollow",
+			description: "unfollow {url} - Makes current user unfollow a feed",
+			callback: unfollow,
+		},
 	}
 }
 
@@ -307,6 +312,15 @@ func following(args []string) error {
 		}
 	}
 	return nil
+}
+
+func unfollow(args []string) error {
+	if len(args) != 1 {
+		return getErrorArgsQntd(1, len(args))
+	}
+	url := args[0]
+	username := getCurrentUsername()
+	return db.Unfollow(username, url)
 }
 
 

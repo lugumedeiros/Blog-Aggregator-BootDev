@@ -34,6 +34,20 @@ func (q *Queries) CreateFeedFollow(ctx context.Context, arg CreateFeedFollowPara
 	return err
 }
 
+const deleteRelation = `-- name: DeleteRelation :exec
+DELETE FROM feed_follow WHERE ((user_id = $1) AND (feed_id = $2))
+`
+
+type DeleteRelationParams struct {
+	UserID int32
+	FeedID int32
+}
+
+func (q *Queries) DeleteRelation(ctx context.Context, arg DeleteRelationParams) error {
+	_, err := q.db.ExecContext(ctx, deleteRelation, arg.UserID, arg.FeedID)
+	return err
+}
+
 const getFeedByUser = `-- name: GetFeedByUser :many
 SELECT feed_id FROM feed_follow WHERE user_id = $1
 `

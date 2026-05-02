@@ -129,3 +129,20 @@ func Following() ([]feedRelation, error){
 	}
 	return feedCollection, nil
 }
+
+func Unfollow(username string, url string) error {
+	feed, err_feed := GetFeedByUrl(url)
+	if err_feed != nil {
+		return err_feed
+	}
+	user, err_user := GetUserByName(username)
+	if err_user != nil {
+		return err_user
+	}
+
+	var deleteRelationParam DeleteRelationParams
+	deleteRelationParam.FeedID = feed.ID
+	deleteRelationParam.UserID = user.ID
+
+	return AppDB.Querie.DeleteRelation(AppDB.Ctx, deleteRelationParam)
+}
